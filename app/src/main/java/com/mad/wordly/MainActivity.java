@@ -1,8 +1,10 @@
 package com.mad.wordly;
 
 import android.Manifest;
+import android.app.IntentService;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -19,6 +21,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,60 +56,67 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private static String readAll(Reader rd) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int cp;
-        while ((cp = rd.read()) != -1) {
-            sb.append((char) cp);
-        }
-        return sb.toString();
-    }
+    public class URLPullService extends IntentService {
 
-    public static JSONObject readJsonFromUrl(String inputUrl){
-        URL url;
-        JSONObject myresponse = null;
-        StringBuffer response = new StringBuffer();
-        try {
-            url = new URL(inputUrl);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("invalid url");
+        public JSONObject result;
+        public static final String inputUrl = "";
+        public URLPullService(){
+            super("URLPullService");
         }
 
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(false);
-            conn.setDoInput(true);
-            conn.setUseCaches(false);
-            conn.setRequestMethod("GET");
+        @Override
+        protected  void onHandleIntent(final Intent workIntent){
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
 
-            // handle the response
-            int status = conn.getResponseCode();
-            if (status != 200) {
-                throw new IOException("Post failed with error code " + status);
-            } else {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                    URL url;
+                    JSONObject myresponse = null;
+                    StringBuffer response = new StringBuffer();
+                    try {
+                        url = new URL(workIntent.getStringExtra("download_url"));
+                    } catch (MalformedURLException e) {
+                        throw new IllegalArgumentException("invalid url");
+                    }
+
+                    HttpURLConnection conn = null;
+                    try {
+                        conn = (HttpURLConnection) url.openConnection();
+                        conn.setDoOutput(false);
+                        conn.setDoInput(true);
+                        conn.setUseCaches(false);
+                        conn.setRequestMethod("GET");
+
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        String inputLine;
+                        while ((inputLine = in.readLine()) != null) {
+                            response.append(inputLine);
+                        }
+                        in.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (conn != null) {
+                            conn.disconnect();
+                        }
+
+                        //Here is your json in string format
+                        String responseJSON = response.toString();
+                        try {
+                            myresponse = new JSONObject(responseJSON);
+                        } catch (Exception e){
+                        }
+                    }
+                    result = myresponse;
                 }
-                in.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-
-            //Here is your json in string format
-            String responseJSON = response.toString();
+            });
+            thread.start();
             try {
-                myresponse = new JSONObject(responseJSON);
-            } catch (Exception e){
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-        return myresponse;
     }
 
     public String getURLfromPixabay(String string){
@@ -113,42 +124,19 @@ public class MainActivity extends AppCompatActivity {
         string = "https://pixabay.com/api/?key=11734484-6b3632485027241902e65c165&q=" + string + "&image_type=photo";
         String url = "";
         try {
-            JSONObject jsonObject = readJsonFromUrl(string);
+            Intent serviceIntent = new Intent();
+            serviceIntent.putExtra("download_url", string);
+            URLPullService urlPullService = new URLPullService();
+            urlPullService.onHandleIntent(serviceIntent);
+            JSONObject jsonObject = urlPullService.result;
+            JSONArray hits = (JSONArray) jsonObject.get("hits");
+            jsonObject = hits.getJSONObject(0);
             url = (String) jsonObject.get("largeImageURL");
         } catch (Exception e) {
             e.printStackTrace();
         }
         return url;
     }
-
-    //Get image from Pixabay and paste into a new file, stored in /data/data/com.mad.wordly/app_imageDir/my_image.png
-    public void getImage(ImageView image, String string) {
-        String inputURL = getURLfromPixabay(string);
-        Picasso.get().load(inputURL).into(picassoImageTarget(getApplicationContext(), "imageDir", "my_image.jpeg"));
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myImageFile = new File(directory, "my_image.jpeg");
-        Picasso.get().load(myImageFile).into(image);
-    }
-
-    public void deleteImage(String filename){
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myImageFile = new File(directory, filename);
-        myImageFile.delete();
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_INTERNET_ACCESS);
-
-        ImageView image = findViewById(R.id.display);
-        getImage(image, "potato");
-    }
-
 
     //Create a picassoImageTarget
     private Target picassoImageTarget(Context context, final String imageDir, final String imageName) {
@@ -158,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         return new Target() {
             @Override
             public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-                new Thread(new Runnable() {
+                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         final File myImageFile = new File(directory, imageName); // Create image file
@@ -178,7 +166,14 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("image", "image saved to >>>" + myImageFile.getAbsolutePath());
 
                     }
-                }).start();
+                });
+                 thread.start();
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
             }
 
             @Override
@@ -191,4 +186,33 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    //Get image from Pixabay and paste into a new file, stored in /data/data/com.mad.wordly/app_imageDir/my_image.png
+    public void getImage(ImageView image, String string) {
+        String inputURL = getURLfromPixabay(string);
+        Picasso.get().load(inputURL).into(picassoImageTarget(getApplicationContext(), "imageDir", "my_image.jpeg"));
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File myImageFile = new File(directory, "my_image.jpeg");
+        Picasso.get().load(myImageFile).into(image);
+    }
+
+
+    public void deleteImage(String filename){
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File myImageFile = new File(directory, filename);
+        myImageFile.delete();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_INTERNET_ACCESS);
+
+        ImageView image = findViewById(R.id.display);
+        getImage(image, "child");
+
+    }
 }
