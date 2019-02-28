@@ -8,35 +8,27 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
-
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import org.json.JSONException;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-
-import javax.net.ssl.HttpsURLConnection;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
