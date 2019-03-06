@@ -175,10 +175,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getImage(ImageView image, String string, int i) {
-        String inputURL = getURLfromPixabay(string, i);
-        Picasso.get().load(inputURL).into(image);
-    }
+        String inputURL = getURLfromPixabay( string, i );
 
+        try {
+            Picasso.get().load( inputURL ).into( image );
+        } catch (IllegalArgumentException e) {
+
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
         mPlayer.start();
         playAudio();
 
-        getImage(hintImage, "flower", 5);
+        getImage(hintImage, "tower", 5);
 
         anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(2000);
@@ -292,6 +296,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    protected void onPause() {
+        super.onPause();
+        mPlayer.pause();
+    }
+
+    protected void onResume() {
+        super.onResume();
+        mPlayer.start();
+    }
+
     public void playAudio() {
 
         audioTW.setOnClickListener(new View.OnClickListener() {
@@ -326,22 +340,25 @@ public class MainActivity extends AppCompatActivity {
     public void pressedHint() {
 
         isRotated = !isRotated;
+        hintTW.setRotation(isRotated ? 90 : 0);
         final ViewGroup transitionsContainer = (ViewGroup) findViewById( R.id.transitions_container );
         TransitionManager.beginDelayedTransition( transitionsContainer, new Rotate() );
         TextView hintText = (TextView) findViewById( R.id.hintText );
 
         if (!isRotated) {
-            hintTW.setRotation(isRotated ? 90 : 0);
-            //image.clearAnimation();
-            hintImage.setVisibility(View.GONE);
+            hintImage.animate()
+                    .translationY(hintImage.getHeight())
+                    .setListener(null);
             hintText.setVisibility(View.GONE);
         } else {
-            hintImage.setVisibility(View.VISIBLE);
-            hintTW.setRotation( isRotated ? 90 : 0 );
             final int semiTransparentGrey = Color.argb( 215, 255, 255, 255 );
             hintImage.setColorFilter( semiTransparentGrey, PorterDuff.Mode.SRC_ATOP );
-            //image.startAnimation( animate );
-            //hintText.startAnimation( animate );
+            hintImage.setAlpha(0.0f);
+            hintImage.setVisibility(View.VISIBLE);
+            hintImage.animate()
+                    .alpha(1.0f)
+                    .translationY(0)
+                    .setListener(null);
             hintText.setVisibility( View.VISIBLE );
         }
     }
