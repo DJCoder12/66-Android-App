@@ -62,7 +62,7 @@
 
     <EditText
         android:id="@+id/input"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:imeOptions="actionDone"
         android:layout_marginTop="230dp"
@@ -152,6 +152,186 @@
         android:textColor="#000"
         android:textSize="32dp"
         android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="661dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="R"
+        android:textColor="#fff"
+        android:textSize="32dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/howLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="160dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="How to play?"
+        android:textColor="#fff"
+        android:textSize="32dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/howBody"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="200dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:textColor="#fff"
+        android:textSize="32dp"
+        android:visibility="gone"
+        android:alpha="0.75"/>
+
+    <TextView
+        android:id="@+id/wins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="160dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="Wins"
+        android:textColor="#fff"
+        android:textSize="32dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/winsNum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="200dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="54"
+        android:textColor="#fff"
+        android:textSize="46dp"
+        android:visibility="gone"
+        android:alpha="0.75"/>
+
+    <TextView
+        android:id="@+id/loses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="260dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="Loses"
+        android:textColor="#fff"
+        android:textSize="32dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/losesNum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="300dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="126"
+        android:textColor="#fff"
+        android:textSize="46dp"
+        android:visibility="gone"
+        android:alpha="0.75"/>
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="360dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="Average time"
+        android:textColor="#fff"
+        android:textSize="32dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/timeNum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="400dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="25.6"
+        android:textColor="#fff"
+        android:textSize="46dp"
+        android:visibility="gone"
+        android:alpha="0.75"/>
+
+    <TextView
+        android:id="@+id/words"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="460dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="Average words"
+        android:textColor="#fff"
+        android:textSize="32dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/wordNum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="25dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="500dp"
+        android:fontFamily="@font/calibre_semibold"
+        android:text="5.6"
+        android:textColor="#fff"
+        android:textSize="46dp"
+        android:visibility="gone"
+        android:alpha="0.75"/>
 
     <TextView
         android:id="@+id/audio"

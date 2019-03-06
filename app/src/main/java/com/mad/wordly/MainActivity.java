@@ -19,6 +19,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.core.view.MotionEventCompat;
 
 import com.transitionseverywhere.ChangeBounds;
 import com.transitionseverywhere.ChangeImageTransform;
@@ -29,12 +31,13 @@ import com.transitionseverywhere.TransitionSet;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -53,9 +56,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Random;
 
+import static androidx.core.view.MotionEventCompat.getActionMasked;
+
 public class MainActivity extends AppCompatActivity {
 
-    private static final String LOG_TAG = "Word-ly";
+    private static final String TAG = "SixtySix";
     private static final int REQUEST_INTERNET_ACCESS = 200;
     private boolean permissionInternetAccepted = false;
     private String [] permissions = {Manifest.permission.INTERNET};
@@ -65,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     protected View gradientView;
     protected TextView logoTW;
     protected TextView howTW;
+    protected TextView howLabelTW;
+    protected TextView howBodyTW;
     protected TextView tapToPlayTW;
     protected TextView hintTW;
     protected TextView startWordTW;
@@ -72,12 +79,23 @@ public class MainActivity extends AppCompatActivity {
     protected TextView loadLogoTW;
     protected TextView audioTW;
     protected TextView statsTW;
+    protected TextView statsWinsTW;
+    protected TextView statsLosesTW;
+    protected TextView statsTimeTW;
+    protected TextView statsWordsTW;
+    protected TextView statsResetTW;
+    protected TextView statsWinsNumTW;
+    protected TextView statsLosesNumTW;
+    protected TextView statsTimeNumTW;
+    protected TextView statsWordsNumTW;
     protected ImageView hintImage;
     protected MediaPlayer mPlayer;
+    protected CountDownTimer timer;
 
     protected boolean howPressed;
     protected boolean statsPressed;
     protected Animation anim;
+    private GestureDetectorCompat mDetector;
 
 
     @Override
@@ -194,6 +212,8 @@ public class MainActivity extends AppCompatActivity {
         gradientView = (View) findViewById(R.id.gradientPreloaderView);
         logoTW = (TextView) findViewById(R.id.logo);
         howTW = (TextView) findViewById(R.id.how);
+        howLabelTW = (TextView) findViewById(R.id.howLabel);
+        howBodyTW = (TextView) findViewById(R.id.howBody);
         tapToPlayTW = (TextView) findViewById(R.id.tap);
         hintTW = (TextView) findViewById(R.id.hint);
         startWordTW = (TextView) findViewById(R.id.begin);
@@ -201,9 +221,20 @@ public class MainActivity extends AppCompatActivity {
         wordInput = (EditText) findViewById(R.id.input);
         loadLogoTW = (TextView) findViewById(R.id.loadTW);
         statsTW = (TextView) findViewById(R.id.stats);
+        statsWinsTW = (TextView) findViewById(R.id.wins);
+        statsLosesTW = (TextView) findViewById(R.id.loses);
+        statsTimeTW = (TextView) findViewById(R.id.time);
+        statsWordsTW = (TextView) findViewById(R.id.words);
+        statsWinsNumTW = (TextView) findViewById(R.id.winsNum);
+        statsLosesNumTW = (TextView) findViewById(R.id.losesNum);
+        statsTimeNumTW = (TextView) findViewById(R.id.timeNum);
+        statsWordsNumTW = (TextView) findViewById(R.id.wordNum);
+        statsResetTW = (TextView) findViewById(R.id.reset);
         hintImage = (ImageView) findViewById(R.id.display);
         audioTW = (TextView) findViewById(R.id.audio);
+        timer = null;
 
+        mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         mPlayer = MediaPlayer.create(this, R.raw.beat);
         mPlayer.setLooping(true);
         mPlayer.start();
@@ -242,12 +273,17 @@ public class MainActivity extends AppCompatActivity {
                     howTW.setText("X");
                     howTW.setTextColor(Color.parseColor("#ffffff"));
                     statsTW.setVisibility(View.GONE);
+                    howLabelTW.setVisibility(View.VISIBLE);
+                    howBodyTW.setText("Text \nText \nText");
+                    howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
                 } else {
                     howPressed = false;
                     howTW.setText("?");
                     howTW.setTextColor(Color.parseColor("#000000"));
                     statsTW.setVisibility(View.VISIBLE);
+                    howLabelTW.setVisibility(View.GONE);
+                    howBodyTW.setVisibility(View.GONE);
                     initialScreen();
                 }
             }
@@ -259,18 +295,17 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (!statsPressed) {
-                    statsPressed = true;
-                    statsTW.setText("X");
-                    statsTW.setTextColor(Color.parseColor("#ffffff"));
-                    howTW.setVisibility(View.GONE);
-                    fullScreen();
+                    showStats();
                 } else {
-                    statsPressed = false;
-                    statsTW.setText("S");
-                    statsTW.setTextColor(Color.parseColor("#000000"));
-                    howTW.setVisibility(View.VISIBLE);
-                    initialScreen();
+                    hideStats();
                 }
+            }
+        });
+
+        statsResetTW.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                resetStats();
             }
         });
 
@@ -304,6 +339,78 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mPlayer.start();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        this.mDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
+
+
+class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+        private static final int SWIPE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+        @Override
+        public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+            boolean result = false;
+            try {
+                float diffY = event2.getY() - event1.getY();
+                float diffX = event2.getX() - event1.getX();
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX > 0) {
+                            timer.cancel();
+                            logoTW.setText("66");
+                            hidePlay();
+                            initialScreen();
+                        }
+                        result = true;
+                    }
+                }
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    public void showStats() {
+        statsPressed = true;
+        statsTW.setText("X");
+        statsTW.setTextColor(Color.parseColor("#ffffff"));
+        howTW.setVisibility(View.GONE);
+        statsWinsTW.setVisibility(View.VISIBLE);
+        statsLosesTW.setVisibility(View.VISIBLE);
+        statsTimeTW.setVisibility(View.VISIBLE);
+        statsWordsTW.setVisibility(View.VISIBLE);
+        statsWinsNumTW.setVisibility(View.VISIBLE);
+        statsLosesNumTW.setVisibility(View.VISIBLE);
+        statsTimeNumTW.setVisibility(View.VISIBLE);
+        statsWordsNumTW.setVisibility(View.VISIBLE);
+        fullScreen();
+    }
+
+    public void hideStats() {
+        statsPressed = false;
+        statsTW.setText("S");
+        statsTW.setTextColor(Color.parseColor("#000000"));
+        howTW.setVisibility(View.VISIBLE);
+        statsTW.setVisibility(View.GONE);
+        statsWinsTW.setVisibility(View.GONE);
+        statsLosesTW.setVisibility(View.GONE);
+        statsTimeTW.setVisibility(View.GONE);
+        statsWordsTW.setVisibility(View.GONE);
+        statsWinsNumTW.setVisibility(View.GONE);
+        statsLosesNumTW.setVisibility(View.GONE);
+        statsTimeNumTW.setVisibility(View.GONE);
+        statsWordsNumTW.setVisibility(View.GONE);
+        initialScreen();
+    }
+
+    public void resetStats() {
+        // Resetting stats
     }
 
     public void playAudio() {
@@ -364,6 +471,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void pressedPlay() {
+
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
         hintTW.setVisibility(View.VISIBLE);
         logoTW.setTextColor(Color.parseColor("#ffffff"));
@@ -379,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
         startWordTW.setVisibility(View.VISIBLE);
         lastWordTW.setVisibility(View.VISIBLE);
 
-        new CountDownTimer(66000, 1000) {
+        timer = new CountDownTimer(66000, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 logoTW.setText(Integer.toString((int)(millisUntilFinished / 1000)));
@@ -388,9 +496,17 @@ public class MainActivity extends AppCompatActivity {
             public void onFinish() {
 
             }
-        }.start();
+        };
+        timer.start();
     }
 
+    public void hidePlay() {
+        hintTW.setVisibility(View.GONE);
+        startWordTW.setVisibility(View.GONE);
+        lastWordTW.setVisibility(View.GONE);
+        wordInput.setVisibility(View.GONE);
+        howTW.setVisibility(View.VISIBLE);
+    }
 
     // Gradient background methods
     protected String gradients[][] =
@@ -440,7 +556,7 @@ public class MainActivity extends AppCompatActivity {
         animator.start();
     }
 
-    public void stopAnimation(){
+    public void stopAnimation() {
         ObjectAnimator.ofFloat((View) findViewById(R.id.gradientPreloaderView), "alpha", 0f).setDuration(125).start();
     }
 
