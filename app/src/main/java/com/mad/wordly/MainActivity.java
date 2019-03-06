@@ -8,6 +8,7 @@ import android.animation.ValueAnimator;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -48,8 +49,12 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -208,7 +213,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
-
         gradientView = (View) findViewById(R.id.gradientPreloaderView);
         logoTW = (TextView) findViewById(R.id.logo);
         howTW = (TextView) findViewById(R.id.how);
@@ -664,5 +668,47 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
+
+    //Use SharedPreferences to store stats. Call SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("stats",MODE_PRIVATE); and sharedPreference.getInt("Wins", -1) to get the stored number of wins, default value being -1
+    //When pass value into endGame, pass whether win/lose as a boolean and add the number of guesses made in the latest game
+    public void endGame(boolean win, int numGuess)
+    {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("stats",MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        if (sharedPreferences.getInt("Games", -1) == -1)
+        {
+            editor.putInt("Games", 0);
+            editor.putInt("Wins", 0);
+            editor.putInt("Loses", 0);
+            editor.putInt("Guesses", 0);
+            editor.putInt("Average Guesses per Game", 0);
+            editor.apply();
+        }
+        int numGame = sharedPreferences.getInt("Games", -1);
+        numGame++;
+        int numWins = sharedPreferences.getInt("Wins", -1);
+        int numLoses = sharedPreferences.getInt("Loses", -1);
+        if (win == true)
+        {
+            numWins++;
+        } else
+        {
+            numLoses++;
+        }
+        numGuess += sharedPreferences.getInt("Guesses", -1);
+        int average = numGame/numGuess;
+        editor.remove("Average Guesses per Game");
+        editor.remove("Games");
+        editor.remove("Wins");
+        editor.remove("Loses");
+        editor.remove("Guesses");
+        editor.apply();
+        editor.putInt("Games", numGame);
+        editor.putInt("Wins", numWins);
+        editor.putInt("Loses", numLoses);
+        editor.putInt("Guesses", numGuess);
+        editor.putInt("Average Guesses per Game", average);
+        editor.apply();
+    }
 
 }
