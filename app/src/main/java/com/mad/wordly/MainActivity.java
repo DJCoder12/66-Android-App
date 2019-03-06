@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     protected ImageView hintImage;
     protected MediaPlayer mPlayer;
     protected CountDownTimer timer;
+    protected SharedPreferences sharedPreferences;
 
     protected boolean howPressed;
     protected boolean statsPressed;
@@ -237,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
         hintImage = (ImageView) findViewById(R.id.display);
         audioTW = (TextView) findViewById(R.id.audio);
         timer = null;
+        sharedPreferences = getApplicationContext().getSharedPreferences("stats", MODE_PRIVATE);
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         mPlayer = MediaPlayer.create(this, R.raw.beat);
@@ -381,10 +383,21 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     }
 
     public void showStats() {
+
+        int wins = sharedPreferences.getInt("Wins", -1);
+        int loses = sharedPreferences.getInt("Loses", -1);
+        int games = sharedPreferences.getInt("Games", -1);
+        int guesses = sharedPreferences.getInt("Average Guesses per Game", -1);
         statsPressed = true;
         statsTW.setText("X");
         statsTW.setTextColor(Color.parseColor("#ffffff"));
         howTW.setVisibility(View.GONE);
+
+        statsWinsNumTW.setText(Integer.toString(wins));
+        statsLosesNumTW.setText(Integer.toString(loses));
+        statsWordsNumTW.setText(Integer.toString(games));
+        statsLosesNumTW.setText(Integer.toString(guesses));
+
         statsWinsTW.setVisibility(View.VISIBLE);
         statsLosesTW.setVisibility(View.VISIBLE);
         statsTimeTW.setVisibility(View.VISIBLE);
