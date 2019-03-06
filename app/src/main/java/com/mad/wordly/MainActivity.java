@@ -7,7 +7,6 @@ import android.animation.TimeAnimator;
 import android.animation.ValueAnimator;
 import android.app.IntentService;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -41,15 +40,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -58,6 +53,7 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String LOG_TAG = "Word-ly";
     private static final int REQUEST_INTERNET_ACCESS = 200;
     private boolean permissionInternetAccepted = false;
     private String [] permissions = {Manifest.permission.INTERNET};
@@ -151,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public String getURLfromPixabay(String string){
+    public String getURLfromPixabay(String string, int i){
 
         string = "https://pixabay.com/api/?key=11734484-6b3632485027241902e65c165&q=" + string + "&image_type=photo";
         String url = "";
@@ -162,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             urlPullService.onHandleIntent(serviceIntent);
             JSONObject jsonObject = urlPullService.result;
             JSONArray hits = (JSONArray) jsonObject.get("hits");
-            jsonObject = hits.getJSONObject(0);
+            jsonObject = hits.getJSONObject(i);
             url = (String) jsonObject.get("largeImageURL");
         } catch (Exception e) {
             e.printStackTrace();
@@ -170,70 +166,9 @@ public class MainActivity extends AppCompatActivity {
         return url;
     }
 
-    //Create a picassoImageTarget
-    private Target picassoImageTarget(Context context, final String imageDir, final String imageName) {
-        Log.d("picassoImageTarget", " picassoImageTarget");
-        ContextWrapper cw = new ContextWrapper(context);
-        final File directory = cw.getDir(imageDir, Context.MODE_PRIVATE); // path to /data/data/yourapp/app_imageDir
-        return new Target() {
-            @Override
-            public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-                 Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        final File myImageFile = new File(directory, imageName); // Create image file
-                        FileOutputStream fos = null;
-                        try {
-                            fos = new FileOutputStream(myImageFile);
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } finally {
-                            try {
-                                fos.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        Log.i("image", "image saved to >>>" + myImageFile.getAbsolutePath());
-
-                    }
-                });
-                 thread.start();
-                try {
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onBitmapFailed(Exception ie, Drawable errorDrawable) {
-            }
-            @Override
-            public void onPrepareLoad(Drawable placeHolderDrawable) {
-                if (placeHolderDrawable != null) {}
-            }
-        };
-    }
-
-    //Get image from Pixabay and paste into a new file, stored in /data/data/com.mad.wordly/app_imageDir/my_image.png
-    public void getImage(ImageView image, String string) {
-        String inputURL = getURLfromPixabay(string);
-        Picasso.get().load(inputURL).into(picassoImageTarget(getApplicationContext(), "imageDir", "my_image.jpeg"));
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myImageFile = new File(directory, "my_image.jpeg");
-        Picasso.get().load(myImageFile).into(image);
-    }
-
-
-    public void deleteImage(String filename){
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myImageFile = new File(directory, filename);
-        myImageFile.delete();
+    public void getImage(ImageView image, String string, int i) {
+        String inputURL = getURLfromPixabay(string, i);
+        Picasso.get().load(inputURL).into(image);
     }
 
 
@@ -346,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                 0);
         animate.setDuration(2500);
         animate.setFillAfter(true);
-        getImage(image, "flower");
+        getImage(image, "flower", 5);
         image.startAnimation(animate);
         hintText.startAnimation(animate);
         hintText.setVisibility(View.VISIBLE);
@@ -362,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
 
         TransitionManager.beginDelayedTransition(transitionsContainer);
         wordInput.setVisibility(View.VISIBLE);
-        InputMethodManager imm = (InputMethodManager) gradientView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) gradientView.getContext().getSystemService( Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(gradientView.getWindowToken(), 0);
         startWordTW.setVisibility(View.VISIBLE);
         lastWordTW.setVisibility(View.VISIBLE);
