@@ -9,11 +9,11 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -22,10 +22,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.transitionseverywhere.ChangeBounds;
 import com.transitionseverywhere.ChangeImageTransform;
+import com.transitionseverywhere.Rotate;
 import com.transitionseverywhere.TransitionManager;
 import com.transitionseverywhere.TransitionSet;
 
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -67,8 +69,14 @@ public class MainActivity extends AppCompatActivity {
     protected TextView hintTW;
     protected TextView startWordTW;
     protected TextView lastWordTW;
+    protected TextView loadLogoTW;
+    protected TextView audioTW;
+    protected TextView statsTW;
+    protected ImageView hintImage;
+    protected MediaPlayer mPlayer;
 
     protected boolean howPressed;
+    protected boolean statsPressed;
     protected Animation anim;
 
 
@@ -179,8 +187,6 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
 
-        ActivityCompat.requestPermissions(this, permissions, REQUEST_INTERNET_ACCESS);
-
         gradientView = (View) findViewById(R.id.gradientPreloaderView);
         logoTW = (TextView) findViewById(R.id.logo);
         howTW = (TextView) findViewById(R.id.how);
@@ -189,9 +195,37 @@ public class MainActivity extends AppCompatActivity {
         startWordTW = (TextView) findViewById(R.id.begin);
         lastWordTW = (TextView) findViewById(R.id.finish);
         wordInput = (EditText) findViewById(R.id.input);
+        loadLogoTW = (TextView) findViewById(R.id.loadTW);
+        statsTW = (TextView) findViewById(R.id.stats);
+        hintImage = (ImageView) findViewById(R.id.display);
+        audioTW = (TextView) findViewById(R.id.audio);
+
+        mPlayer = MediaPlayer.create(this, R.raw.beat);
+        mPlayer.setLooping(true);
+        mPlayer.start();
+        playAudio();
+
+        getImage(hintImage, "flower", 5);
+
+        anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(2000);
+        anim.setStartOffset(20);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
 
         // Starting gradient animation
         startAnimation();
+        fullScreen();
+        loadLogoTW.startAnimation(anim);
+
+        Handler mHandler = new Handler();
+        mHandler.postDelayed(new Runnable() {
+            public void run() {
+                loadScreen();
+            }
+        }, 3500);
+
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_INTERNET_ACCESS);
 
         howPressed = false;
         howTW = (TextView) findViewById(R.id.how);
@@ -199,40 +233,44 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                logoTW = (TextView) findViewById(R.id.logo);
-                howTW = (TextView) findViewById(R.id.how);
-
                 if (!howPressed) {
                     howPressed = true;
-                    logoTW.setTextColor(Color.parseColor("#ffffff"));
                     howTW.setText("X");
                     howTW.setTextColor(Color.parseColor("#ffffff"));
+                    statsTW.setVisibility(View.GONE);
                     fullScreen();
                 } else {
                     howPressed = false;
-                    logoTW.setTextColor(Color.parseColor("#000000"));
                     howTW.setText("?");
                     howTW.setTextColor(Color.parseColor("#000000"));
+                    statsTW.setVisibility(View.VISIBLE);
                     initialScreen();
                 }
             }
         });
 
-        anim = new AlphaAnimation(0.0f, 1.0f);
-        anim.setDuration(2500);
-        anim.setStartOffset(20);
-        anim.setRepeatMode(Animation.REVERSE);
-        anim.setRepeatCount(Animation.INFINITE);
-        tapToPlayTW.startAnimation(anim);
-
-        gradientView.setOnClickListener(new View.OnClickListener() {
+        statsPressed = false;
+        statsTW.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                pressedPlay();
-                fullScreen();
+                if (!statsPressed) {
+                    statsPressed = true;
+                    statsTW.setText("X");
+                    statsTW.setTextColor(Color.parseColor("#ffffff"));
+                    howTW.setVisibility(View.GONE);
+                    fullScreen();
+                } else {
+                    statsPressed = false;
+                    statsTW.setText("S");
+                    statsTW.setTextColor(Color.parseColor("#000000"));
+                    howTW.setVisibility(View.VISIBLE);
+                    initialScreen();
+                }
             }
         });
+
+        tapToPlayTW.startAnimation(anim);
 
         hintTW.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -254,6 +292,22 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void playAudio() {
+
+        audioTW.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlayer.isPlaying()) {
+                    audioTW.setPaintFlags(audioTW.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    mPlayer.pause();
+                } else {
+                    mPlayer.start();
+                    audioTW.setPaintFlags(audioTW.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+                }
+            }
+        });
+    }
+
     public void wordSubmitted() {
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
         String word = wordInput.getText().toString();
@@ -267,24 +321,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    protected boolean isRotated;
+
     public void pressedHint() {
-        TextView hintText = (TextView) findViewById(R.id.hintText);
-        ImageView image = findViewById(R.id.display);
 
-        final int semiTransparentGrey = Color.argb(215, 255, 255, 255);
-        image.setColorFilter(semiTransparentGrey, PorterDuff.Mode.SRC_ATOP);
+        isRotated = !isRotated;
+        final ViewGroup transitionsContainer = (ViewGroup) findViewById( R.id.transitions_container );
+        TransitionManager.beginDelayedTransition( transitionsContainer, new Rotate() );
+        TextView hintText = (TextView) findViewById( R.id.hintText );
 
-        TranslateAnimation animate = new TranslateAnimation(
-                0,
-                0,
-                image.getHeight(),
-                0);
-        animate.setDuration(2500);
-        animate.setFillAfter(true);
-        getImage(image, "flower", 5);
-        image.startAnimation(animate);
-        hintText.startAnimation(animate);
-        hintText.setVisibility(View.VISIBLE);
+        if (!isRotated) {
+            hintTW.setRotation(isRotated ? 90 : 0);
+            //image.clearAnimation();
+            hintImage.setVisibility(View.GONE);
+            hintText.setVisibility(View.GONE);
+        } else {
+            hintImage.setVisibility(View.VISIBLE);
+            hintTW.setRotation( isRotated ? 90 : 0 );
+            final int semiTransparentGrey = Color.argb( 215, 255, 255, 255 );
+            hintImage.setColorFilter( semiTransparentGrey, PorterDuff.Mode.SRC_ATOP );
+            //image.startAnimation( animate );
+            //hintText.startAnimation( animate );
+            hintText.setVisibility( View.VISIBLE );
+        }
     }
 
     public void pressedPlay() {
@@ -292,6 +351,7 @@ public class MainActivity extends AppCompatActivity {
         hintTW.setVisibility(View.VISIBLE);
         logoTW.setTextColor(Color.parseColor("#ffffff"));
         howTW.setVisibility(View.GONE);
+        statsTW.setVisibility(View.GONE);
         tapToPlayTW.clearAnimation();
         tapToPlayTW.setVisibility(View.GONE);
 
@@ -302,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         startWordTW.setVisibility(View.VISIBLE);
         lastWordTW.setVisibility(View.VISIBLE);
 
-        new CountDownTimer(65000, 1000) {
+        new CountDownTimer(66000, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 logoTW.setText(Integer.toString((int)(millisUntilFinished / 1000)));
@@ -320,7 +380,13 @@ public class MainActivity extends AppCompatActivity {
             {
                     {"#56A47B", "#E95871", "#FDEE87" },
                     {"#7949F8", "#80D1DE", "#DDB8FE"},
-                    {"#933FA1", "#F52330", "#FA9B4A"}
+                    {"#933FA1", "#F52330", "#FA9B4A"},
+                    {"#F2B7E0", "#BF1F77", "#40139E" },
+                    {"#3FD0DB", "#CE147E", "#FA1226"},
+                    {"#87F276", "#CF476B", "#8D39DA"},
+                    {"#FAB063", "#CE9F82", "#41A0F2" },
+                    {"#F6142C", "#C5137A", "#12020A"},
+                    {"#7BF2F4", "#E88A54", "#6611EC"}
             };
 
     public void startAnimation() {
@@ -361,8 +427,29 @@ public class MainActivity extends AppCompatActivity {
         ObjectAnimator.ofFloat((View) findViewById(R.id.gradientPreloaderView), "alpha", 0f).setDuration(125).start();
     }
 
+    public void loadScreen() {
+
+        logoTW.setVisibility(View.VISIBLE);
+        statsTW.setVisibility(View.VISIBLE);
+        howTW.setVisibility(View.VISIBLE);
+        audioTW.setVisibility(View.VISIBLE);
+        loadLogoTW.clearAnimation();
+        loadLogoTW.setVisibility(View.GONE);
+        gradientView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                pressedPlay();
+                fullScreen();
+            }
+        });
+        initialScreen();
+    }
+
     public void fullScreen() {
 
+        audioTW.setVisibility(View.GONE);
+        logoTW.setTextColor(Color.parseColor("#ffffff"));
         tapToPlayTW.clearAnimation();
         tapToPlayTW.setVisibility(View.GONE);
         gradientView.setClickable(false);
@@ -383,6 +470,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void initialScreen() {
 
+        audioTW.setVisibility(View.VISIBLE);
+        statsTW.setVisibility(View.VISIBLE);
+        logoTW.setTextColor(Color.parseColor("#000000"));
         tapToPlayTW.startAnimation(anim);
         tapToPlayTW.setVisibility(View.VISIBLE);
         gradientView.setClickable(true);
