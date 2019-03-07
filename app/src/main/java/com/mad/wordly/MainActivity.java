@@ -98,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
     protected CountDownTimer timer;
     protected SharedPreferences sharedPreferences;
 
+    protected int numGuesses;
+
     protected boolean howPressed;
     protected boolean statsPressed;
     protected Animation anim;
@@ -238,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
         hintImage = (ImageView) findViewById(R.id.display);
         audioTW = (TextView) findViewById(R.id.audio);
         timer = null;
+        numGuesses = 1;
         sharedPreferences = getApplicationContext().getSharedPreferences("stats", MODE_PRIVATE);
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
@@ -281,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
                     statsTW.setVisibility(View.GONE);
                     howLabelTW.setVisibility(View.VISIBLE);
                     howBodyTW.setText("Text \nText \nText");
+
                     howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
                 } else {
@@ -449,6 +453,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     public void wordSubmitted() {
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
         String word = wordInput.getText().toString();
+        numGuesses++;
 
         if (word == word) { // fix this
 
@@ -490,6 +495,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     public void pressedPlay() {
 
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
+        numGuesses = 0;
         hintTW.setVisibility(View.VISIBLE);
         logoTW.setTextColor(Color.parseColor("#ffffff"));
         howTW.setVisibility(View.GONE);
@@ -511,7 +517,10 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
             }
 
             public void onFinish() {
-
+                endGame(false, numGuesses);
+                logoTW.setText("66");
+                hidePlay();
+                initialScreen();
             }
         };
         timer.start();
@@ -686,7 +695,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     //When pass value into endGame, pass whether win/lose as a boolean and add the number of guesses made in the latest game
     public void endGame(boolean win, int numGuess)
     {
-        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("stats",MODE_PRIVATE);
+        sharedPreferences = getApplicationContext().getSharedPreferences("stats", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         if (sharedPreferences.getInt("Games", -1) == -1)
         {
@@ -709,7 +718,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
             numLoses++;
         }
         numGuess += sharedPreferences.getInt("Guesses", -1);
-        int average = numGame/numGuess;
+        int average = numGuess/numGame;
         editor.remove("Average Guesses per Game");
         editor.remove("Games");
         editor.remove("Wins");
