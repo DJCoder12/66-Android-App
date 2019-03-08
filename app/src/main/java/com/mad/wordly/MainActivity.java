@@ -794,7 +794,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         String word2 = null;
 
         for (int i = 0; i < allWords.size(); i++) {
-            if (allWords.get(i).length() == word1.length() && allWords.get(i).charAt(0) == word1.charAt(0) && i != x) {
+            if (allWords.get(i).length() == word1.length() && allWords.get(i).charAt(0) == word1.charAt(0) && allWords.get(i).charAt(allWords.get(i).length() - 1) == word1.charAt(word1.length() - 1) && i != x) {
                 word2 = allWords.get(i);
                 break;
             }
