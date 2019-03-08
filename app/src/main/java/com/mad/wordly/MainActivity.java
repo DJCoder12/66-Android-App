@@ -314,7 +314,6 @@ public class MainActivity extends AppCompatActivity {
                     statsTW.setVisibility(View.GONE);
                     howLabelTW.setVisibility(View.VISIBLE);
                     howBodyTW.setText("Text \nText \nText");
-
                     howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
                 } else {
@@ -363,6 +362,8 @@ public class MainActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
                 if(actionId==EditorInfo.IME_ACTION_DONE){
+                    InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                     wordSubmitted();
                     return true;
                 }
@@ -401,6 +402,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffX > 0) {
+                            endGame(false, numGuesses, (int)finalTime/1000);
                             timer.cancel();
                             logoTW.setText("66");
                             hidePlay();
@@ -445,6 +447,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         statsLosesNumTW.setVisibility(View.VISIBLE);
         statsTimeNumTW.setVisibility(View.VISIBLE);
         statsWordsNumTW.setVisibility(View.VISIBLE);
+        statsResetTW.setVisibility(View.VISIBLE);
         fullScreen();
     }
 
@@ -462,11 +465,20 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         statsLosesNumTW.setVisibility(View.GONE);
         statsTimeNumTW.setVisibility(View.GONE);
         statsWordsNumTW.setVisibility(View.GONE);
+        statsResetTW.setVisibility(View.GONE);
         initialScreen();
     }
 
     public void resetStats() {
-        // Resetting stats
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt( "Games", 0 );
+        editor.putInt( "Wins", 0 );
+        editor.putInt( "Loses", 0 );
+        editor.putInt( "Guesses", 0 );
+        editor.putInt( "Average Guesses per Game", 0 );
+        editor.putInt( "Total time", 0 );
+        editor.apply();
+        showStats();
     }
 
     public void playAudio() {
@@ -485,7 +497,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         });
     }
 
-    public boolean oneLetterChanged(View v){
+    public boolean oneLetterChanged() {
         String prevWord = startWordTW.getText().toString();
         String inputWord = wordInput.getText().toString();
         int counter = 0;
@@ -508,12 +520,12 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         String word = wordInput.getText().toString();
         numGuesses++;
 
-        if (word.equals(lastWordTW.getText().toString())) {
+        if (word.equals(lastWordTW.getText().toString()) && oneLetterChanged()) {
             endGame(true, numGuesses, (int)finalTime/1000);
             timer.cancel();
             initialScreen();
             hidePlay();
-        } else if (allWords.contains(word)) { // fix this
+        } else if (allWords.contains(word) && oneLetterChanged()) { // fix this
             startAnimation();
             startWordTW.setText( word );
             startWordTW.setVisibility( View.VISIBLE );
@@ -570,7 +582,8 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         timer = new CountDownTimer(66000, 1000) {
             public void onTick(long millisUntilFinished) {
-                finalTime = millisUntilFinished;
+                finalTime = 66000 - millisUntilFinished;
+                Log.d( TAG, Long.toString(66000 - finalTime));
                 logoTW.setText(Integer.toString((int)(millisUntilFinished / 1000)));
             }
 
@@ -868,7 +881,6 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 }
             }
         }
-        setGame();
         return 0;
     }
 
