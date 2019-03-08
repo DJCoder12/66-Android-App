@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
                     howTW.setTextColor(Color.parseColor("#ffffff"));
                     statsTW.setVisibility(View.GONE);
                     howLabelTW.setVisibility(View.VISIBLE);
-                    howBodyTW.setText("Welcome to 66. This is a game in which you are given a start word and an end word. You are allowed to change one letter at a time each turn. Your goal is to keep making one letter change until you create the end word within the time limit of 66 seconds. ***WARNING using the hint will give you another possible move that can be made. But be careful this is NOT always a progressive move. Good Luck the developers of this game believe in you :)");
+                    howBodyTW.setText("Welcome to 66. \nThis is a game in which you are given a start word and an target word. You are allowed to change one letter each turn. The goal is to keep making one letter change until you reach the target word within the time limit of 66 seconds. \nWARNING: Pressing \"H\" will give you a visual suggestion for the last word before the target. GOOD LUCK, the developers of this game believe in you :)");
                     howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
                 } else {
@@ -577,6 +577,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
         numGuesses = 0;
+        getImage(hintImage, findHint(), 0);
         hintTW.setVisibility(View.VISIBLE);
         logoTW.setTextColor(Color.parseColor("#ffffff"));
         howTW.setVisibility(View.GONE);
@@ -603,8 +604,6 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 timer.cancel();
                 return finalTime;
             }
-
-
 
             public void onFinish() {
                 endGame(false, numGuesses, (int)finalTime/1000);
@@ -927,23 +926,21 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         return candidates;
     }
 
-    private void findHint(String word)
+    private String findHint()
     {
         String result = "question+mark";
-        for (int i = 1; i < word.length()-2; i++){
-            result = word.substring(0, i);
+        for (int i = 1; i < words[1].length()-2; i++){
+            result = words[1].substring(0, i);
             for (int j = 0; j < 25; j++)
             {
                 result += (char) (97 + j);
-                result += word.substring(i+1);
-                if (allWords.contains(result) && result != word)
+                result += words[1].substring(i+1);
+                if (result.equals(words[1]) == false && allWords.contains(result))
                 {
-                    getImage(hintImage, result, 0);
-                    break;
-                } else result = word.substring(0, i);
+                    return result;
+                } else result = words[1].substring(0, i);
             }
         }
-        getImage(hintImage, result, 0);
-        Log.d(TAG, "hint"+hintString);
+        return result;
     }
 }
