@@ -484,6 +484,24 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         });
     }
 
+    public boolean oneLetterChanged(View v){
+        String prevWord = startWordTW.getText().toString();
+        String inputWord = wordInput.getText().toString();
+        int counter = 0;
+        for (int z=0;z<inputWord.length();z++){
+            if (prevWord.charAt(z) != inputWord.charAt(z)){
+                counter+=1;
+            }
+        }
+        if (counter>1){
+            return false;
+        }
+        else{
+            return true;
+        }
+
+    }
+
     public void wordSubmitted() {
         final ViewGroup transitionsContainer = (ViewGroup) findViewById( R.id.transitions_container );
         String word = wordInput.getText().toString();
@@ -872,5 +890,4 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         }
         return candidates;
     }
-
 }
