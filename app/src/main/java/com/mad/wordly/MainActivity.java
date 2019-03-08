@@ -422,6 +422,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         int loses = sharedPreferences.getInt("Loses", -1);
         int games = sharedPreferences.getInt("Games", -1);
         int guesses = sharedPreferences.getInt("Average Guesses per Game", -1);
+        int time = sharedPreferences.getInt("Total time", -1);
         statsPressed = true;
         statsTW.setText("X");
         statsTW.setTextColor(Color.parseColor("#ffffff"));
@@ -431,7 +432,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         statsLosesNumTW.setText(Integer.toString(loses));
         if (games != 0) {
             statsWordsNumTW.setText(Float.toString((float)guesses/games));
-            statsTimeNumTW.setText(Float.toString((float) guesses / games));
+            statsTimeNumTW.setText(Float.toString((float)time/games));
         } else {
             statsWordsNumTW.setText(Integer.toString(0));
             statsTimeNumTW.setText(Integer.toString(0));
