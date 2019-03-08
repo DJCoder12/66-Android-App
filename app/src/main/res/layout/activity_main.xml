@@ -312,7 +312,7 @@
         android:layout_marginLeft="25dp"
         android:layout_marginTop="460dp"
         android:fontFamily="@font/calibre_semibold"
-        android:text="Average words"
+        android:text="Average number of guesses"
         android:textColor="#fff"
         android:textSize="32dp"
         android:visibility="gone"/>

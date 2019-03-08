@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
     protected String[] words;
 
     protected int numGuesses;
+    protected long finalTime;
     protected ArrayList<String> allWords;
 
     protected boolean howPressed;
@@ -428,9 +429,13 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         statsWinsNumTW.setText(Integer.toString(wins));
         statsLosesNumTW.setText(Integer.toString(loses));
-        statsWordsNumTW.setText(Integer.toString(guesses));
-        statsTimeNumTW.setText(Float.toString((float)guesses/games));
-
+        if (games != 0) {
+            statsWordsNumTW.setText(Float.toString((float)guesses/games));
+            statsTimeNumTW.setText(Float.toString((float) guesses / games));
+        } else {
+            statsWordsNumTW.setText(Integer.toString(0));
+            statsTimeNumTW.setText(Integer.toString(0));
+        }
         statsWinsTW.setVisibility(View.VISIBLE);
         statsLosesTW.setVisibility(View.VISIBLE);
         statsTimeTW.setVisibility(View.VISIBLE);
@@ -485,7 +490,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         numGuesses++;
 
         if (word.equals(lastWordTW.getText().toString())) {
-            endGame(true, numGuesses, 0);
+            endGame(true, numGuesses, (int)finalTime/1000);
             timer.cancel();
             initialScreen();
             hidePlay();
@@ -545,13 +550,13 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         lastWordTW.setVisibility(View.VISIBLE);
 
         timer = new CountDownTimer(66000, 1000) {
-
             public void onTick(long millisUntilFinished) {
+                finalTime = millisUntilFinished;
                 logoTW.setText(Integer.toString((int)(millisUntilFinished / 1000)));
             }
 
             public void onFinish() {
-                endGame(false, numGuesses, 0);
+                endGame(false, numGuesses, (int)finalTime/1000);
                 v.vibrate(500);
                 logoTW.setText("66");
                 hidePlay();
