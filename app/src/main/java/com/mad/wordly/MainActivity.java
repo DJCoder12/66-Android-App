@@ -313,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
                     howTW.setTextColor(Color.parseColor("#ffffff"));
                     statsTW.setVisibility(View.GONE);
                     howLabelTW.setVisibility(View.VISIBLE);
-                    howBodyTW.setText("Text \nText \nText");
+                    howBodyTW.setText("Welcome to 66. This is a game in which you are given a start word and an end word. You are allowed to change one letter at a time each turn. Your goal is to keep making one letter change until you create the end word within the time limit of 66 seconds. ***WARNING using the hint will give you another possible move that can be made. But be careful this is NOT always a progressive move. Good Luck the developers of this game believe in you :)");
                     howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
                 } else {
@@ -714,8 +714,8 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
         final float scale = getResources().getDisplayMetrics().density;
-        int height = (int) (520 * scale + 0.5f);
-        int width = (int) (520 * scale + 0.5f);
+        int height = (int) (gradientView.getHeight() * scale + 0.5f);
+        int width = (int) (gradientView.getWidth() * scale + 0.5f);
 
         gradientView = (View) findViewById(R.id.gradientPreloaderView);
         TransitionManager.beginDelayedTransition(transitionsContainer, new TransitionSet()
@@ -723,7 +723,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 .addTransition(new ChangeImageTransform()));
 
         ViewGroup.MarginLayoutParams marginParams = (ViewGroup.MarginLayoutParams) gradientView.getLayoutParams();
-        marginParams.setMargins((int) (25 * scale + 0.5f), (int) (125 * scale + 0.5f), (int) (25 * scale + 0.5f), 0);
+        marginParams.setMargins((int) (25 * scale + 0.5f), (int) (125 * scale + 0.5f), (int) (25 * scale + 0.5f), (int) (100 * scale + 0.5f));
         ViewGroup.LayoutParams params = gradientView.getLayoutParams();
         params.height = height;
         params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
