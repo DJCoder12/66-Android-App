@@ -195,6 +195,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="25dp"
         android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
         android:layout_marginTop="200dp"
         android:fontFamily="@font/calibre_semibold"
         android:textColor="#fff"

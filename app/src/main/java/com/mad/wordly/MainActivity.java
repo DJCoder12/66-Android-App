@@ -313,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
                     howTW.setTextColor(Color.parseColor("#ffffff"));
                     statsTW.setVisibility(View.GONE);
                     howLabelTW.setVisibility(View.VISIBLE);
-                    howBodyTW.setText("Text \nText \nText");
+                    howBodyTW.setText("Welcome to 66. This is a game in which you are given a start word and an end word. You are allowed to change one letter at a time each turn. Your goal is to keep making one letter change until you create the end word within the time limit of 66 seconds. ***WARNING using the hint will give you another possible move that can be made. But be careful this is NOT always a progressive move. Good Luck the developers of this game believe in you :)");
 
                     howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
