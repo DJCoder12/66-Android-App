@@ -75,7 +75,8 @@
         android:backgroundTint="#fff"
         android:textColorLink="#fff"
         android:textColorHint="#fff"
-        android:hint="Type a word"
+        android:textAllCaps="true"
+        android:hint="Your word"
         android:visibility="gone"
         android:inputType="text" />
 

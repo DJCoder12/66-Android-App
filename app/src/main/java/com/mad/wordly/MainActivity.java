@@ -31,6 +31,7 @@ import com.transitionseverywhere.TransitionSet;
 
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -52,6 +53,8 @@ import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +62,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.cert.TrustAnchor;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.Set;
 
 import static androidx.core.view.MotionEventCompat.getActionMasked;
 
@@ -97,8 +108,11 @@ public class MainActivity extends AppCompatActivity {
     protected MediaPlayer mPlayer;
     protected CountDownTimer timer;
     protected SharedPreferences sharedPreferences;
+    protected Vibrator v;
+    protected String[] words;
 
     protected int numGuesses;
+    protected ArrayList<String> allWords;
 
     protected boolean howPressed;
     protected boolean statsPressed;
@@ -216,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
+
         gradientView = (View) findViewById(R.id.gradientPreloaderView);
         logoTW = (TextView) findViewById(R.id.logo);
         howTW = (TextView) findViewById(R.id.how);
@@ -242,6 +257,9 @@ public class MainActivity extends AppCompatActivity {
         timer = null;
         numGuesses = 1;
         sharedPreferences = getApplicationContext().getSharedPreferences("stats", MODE_PRIVATE);
+        v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        setGame();
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         mPlayer = MediaPlayer.create(this, R.raw.beat);
@@ -249,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
         mPlayer.start();
         playAudio();
 
-        getImage(hintImage, "tower", 5);
+        getImage(hintImage, "belts", 5);
 
         anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(2000);
@@ -451,16 +469,21 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     }
 
     public void wordSubmitted() {
-        final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
+        final ViewGroup transitionsContainer = (ViewGroup) findViewById( R.id.transitions_container );
         String word = wordInput.getText().toString();
         numGuesses++;
 
-        if (word == word) { // fix this
-
+        if (word.equals(lastWordTW.getText().toString())) {
+            endGame(true, numGuesses);
+            timer.cancel();
+            initialScreen();
+            hidePlay();
+        } else if (allWords.contains(word)) { // fix this
             startAnimation();
-
             startWordTW.setText( word );
             startWordTW.setVisibility( View.VISIBLE );
+        } else {
+            v.vibrate(500);
         }
     }
 
@@ -518,8 +541,10 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
             public void onFinish() {
                 endGame(false, numGuesses);
+                v.vibrate(500);
                 logoTW.setText("66");
                 hidePlay();
+                setGame();
                 initialScreen();
             }
         };
@@ -527,6 +552,9 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     }
 
     public void hidePlay() {
+        setGame();
+        wordInput.setText(null);
+        logoTW.setText("66");
         hintTW.setVisibility(View.GONE);
         startWordTW.setVisibility(View.GONE);
         lastWordTW.setVisibility(View.GONE);
@@ -731,6 +759,107 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         editor.putInt("Guesses", numGuess);
         editor.putInt("Average Guesses per Game", average);
         editor.apply();
+    }
+
+    public String[] getWords() {
+
+        InputStream inputStream = getResources().openRawResource(R.raw.words_gwicks);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        allWords = new ArrayList<String>();
+        String line = null;
+
+        try {
+            line = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        while(line != null){
+            if (line.length() < 6 && line.length() > 3
+            ) {
+                allWords.add(line);
+            }
+            try {
+                line = reader.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        Random rand = new Random();
+
+        int x = rand.nextInt(allWords.size());
+        String word1 = allWords.get(x);
+        String word2 = null;
+
+        for (int i = 0; i < allWords.size(); i++) {
+            if (allWords.get(i).length() == word1.length() && allWords.get(i).charAt(0) == word1.charAt(0) && i != x) {
+                word2 = allWords.get(i);
+                break;
+            }
+        }
+        return new String[] {word1, word2} ;
+
+    }
+
+    public void setGame() {
+        words = getWords();
+        startWordTW.setText(words[0]);
+        lastWordTW.setText(words[1]);
+        Log.d(TAG, Integer.toString(ladderLength(words[0],words[1])));
+    }
+
+    public int ladderLength(String beginWord, String endWord) {
+        // check edge case
+        if (allWords == null || !allWords.contains(endWord)) {
+            setGame();
+            return 0;
+        }
+
+        // build queue, visited set
+        Queue<String> queue = new LinkedList<>();
+        queue.offer(beginWord);
+        Set<String> words = new HashSet<>(allWords);
+
+        // process one level of queue each time, count
+        int count = 1;
+        while (!queue.isEmpty() && count < 6) {
+            int size = queue.size();
+            count++;
+            for (int i = 0; i < size; i++) {
+                String word = queue.poll();
+                ArrayList<String> candidates = transform(words, word);
+                for (String candidate: candidates) {
+                    if (endWord.equals(candidate)) {
+                        return count;
+                    }
+                    queue.offer(candidate);
+                }
+            }
+        }
+        setGame();
+        return 0;
+    }
+
+    private ArrayList<String> transform(Set<String> words, String word) {
+        ArrayList<String> candidates = new ArrayList<>();
+        StringBuffer sb = new StringBuffer(word);
+        for (int i = 0; i < sb.length(); i++) {
+            char temp = sb.charAt(i);
+            for (char c = 'a'; c <= 'z'; c++) {
+                if (temp == c) {
+                    continue;
+                }
+                sb.setCharAt(i, c);
+                String newWord = sb.toString();
+                if (words.remove(newWord)) {
+                    candidates.add(newWord);
+                }
+            }
+            sb.setCharAt(i, temp);
+        }
+        return candidates;
     }
 
 }
