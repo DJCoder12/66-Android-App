@@ -257,6 +257,17 @@ public class MainActivity extends AppCompatActivity {
         timer = null;
         numGuesses = 1;
         sharedPreferences = getApplicationContext().getSharedPreferences("stats", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        if (sharedPreferences.getInt("Games", -1) == -1)
+        {
+            editor.putInt("Games", 0);
+            editor.putInt("Wins", 0);
+            editor.putInt("Loses", 0);
+            editor.putInt("Guesses", 0);
+            editor.putInt("Average Guesses per Game", 0);
+            editor.putInt("Total time", 0);
+            editor.apply();
+        }
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         setGame();
@@ -417,8 +428,8 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         statsWinsNumTW.setText(Integer.toString(wins));
         statsLosesNumTW.setText(Integer.toString(loses));
-        statsWordsNumTW.setText(Integer.toString(games));
-        statsLosesNumTW.setText(Integer.toString(guesses));
+        statsWordsNumTW.setText(Integer.toString(guesses));
+        statsTimeNumTW.setText(Float.toString((float)guesses/games));
 
         statsWinsTW.setVisibility(View.VISIBLE);
         statsLosesTW.setVisibility(View.VISIBLE);
@@ -474,7 +485,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         numGuesses++;
 
         if (word.equals(lastWordTW.getText().toString())) {
-            endGame(true, numGuesses);
+            endGame(true, numGuesses, 0);
             timer.cancel();
             initialScreen();
             hidePlay();
@@ -540,7 +551,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
             }
 
             public void onFinish() {
-                endGame(false, numGuesses);
+                endGame(false, numGuesses, 0);
                 v.vibrate(500);
                 logoTW.setText("66");
                 hidePlay();
@@ -721,23 +732,15 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
     //Use SharedPreferences to store stats. Call SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("stats",MODE_PRIVATE); and sharedPreference.getInt("Wins", -1) to get the stored number of wins, default value being -1
     //When pass value into endGame, pass whether win/lose as a boolean and add the number of guesses made in the latest game
-    public void endGame(boolean win, int numGuess)
+    public void endGame(boolean win, int numGuess, int time)
     {
         sharedPreferences = getApplicationContext().getSharedPreferences("stats", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        if (sharedPreferences.getInt("Games", -1) == -1)
-        {
-            editor.putInt("Games", 0);
-            editor.putInt("Wins", 0);
-            editor.putInt("Loses", 0);
-            editor.putInt("Guesses", 0);
-            editor.putInt("Average Guesses per Game", 0);
-            editor.apply();
-        }
         int numGame = sharedPreferences.getInt("Games", -1);
         numGame++;
         int numWins = sharedPreferences.getInt("Wins", -1);
         int numLoses = sharedPreferences.getInt("Loses", -1);
+        int totalTime = sharedPreferences.getInt("Total time", -1);
         if (win == true)
         {
             numWins++;
@@ -746,18 +749,21 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
             numLoses++;
         }
         numGuess += sharedPreferences.getInt("Guesses", -1);
+        totalTime += time;
         int average = numGuess/numGame;
         editor.remove("Average Guesses per Game");
         editor.remove("Games");
         editor.remove("Wins");
         editor.remove("Loses");
         editor.remove("Guesses");
+        editor.remove("Total time");
         editor.apply();
         editor.putInt("Games", numGame);
         editor.putInt("Wins", numWins);
         editor.putInt("Loses", numLoses);
         editor.putInt("Guesses", numGuess);
         editor.putInt("Average Guesses per Game", average);
+        editor.putInt("Total time", totalTime);
         editor.apply();
     }
 
