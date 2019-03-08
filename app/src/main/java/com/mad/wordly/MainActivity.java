@@ -115,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
 
     protected int numGuesses;
     protected long finalTime;
-    protected String hintString;
     protected ArrayList<String> allWords;
 
     protected boolean howPressed;
@@ -284,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
         mPlayer.start();
         playAudio();
 
-        getImage(hintImage, "question+mark", 0);
+        getImage(hintImage, "belts", 5);
 
         anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(2000);
@@ -318,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
                     howTW.setTextColor(Color.parseColor("#ffffff"));
                     statsTW.setVisibility(View.GONE);
                     howLabelTW.setVisibility(View.VISIBLE);
-                    howBodyTW.setText("Welcome to 66. \nThis is a game in which you are given a start word and an target word. You are allowed to change one letter each turn. The goal is to keep making changes until you reach the target word within the time limit. \nWARNING: Using the hint will give you another possible move that is possible. But be careful this is NOT always a progressive move. GOOD LUCK the developers of this game believe in you :)");
+                    howBodyTW.setText("Welcome to 66. This is a game in which you are given a start word and an end word. You are allowed to change one letter at a time each turn. Your goal is to keep making one letter change until you create the end word within the time limit of 66 seconds. ***WARNING using the hint will give you another possible move that can be made. But be careful this is NOT always a progressive move. Good Luck the developers of this game believe in you :)");
                     howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
                 } else {
@@ -531,6 +530,9 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         if (word.equals(lastWordTW.getText().toString()) && oneLetterChanged()) {
             endGame(true, numGuesses, (int)finalTime/1000);
             timer.cancel();
+            WinorLose.setText("YOU WIN \n Guesses\n" + numGuesses );
+            WinorLose.setVisibility(View.VISIBLE);
+            tapToPlayTW.setText("PLAY AGAIN");
             initialScreen();
             hidePlay();
 
@@ -574,7 +576,6 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     public void pressedPlay() {
 
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
-        findHint(words[1]);
         numGuesses = 0;
         hintTW.setVisibility(View.VISIBLE);
         logoTW.setTextColor(Color.parseColor("#ffffff"));
@@ -598,12 +599,19 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 logoTW.setText(Integer.toString((int)(millisUntilFinished / 1000)));
             }
 
+            public long onPause(){
+                timer.cancel();
+                return finalTime;
+            }
+
+
+
             public void onFinish() {
                 endGame(false, numGuesses, (int)finalTime/1000);
                 v.vibrate(500);
                 logoTW.setText("66");
                 hidePlay();
-                WinorLose.setText("You gave up\n Guesses\n" + numGuesses );
+                WinorLose.setText("TIME IS UP\n Guesses\n" + numGuesses );
                 WinorLose.setVisibility(View.VISIBLE);
                 tapToPlayTW.setText("PLAY AGAIN");
                 setGame();
@@ -618,12 +626,10 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         wordInput.setText(null);
         logoTW.setText("66");
         hintTW.setVisibility(View.GONE);
-        hintImage.setVisibility(View.GONE);
         startWordTW.setVisibility(View.GONE);
         lastWordTW.setVisibility(View.GONE);
         wordInput.setVisibility(View.GONE);
         howTW.setVisibility(View.VISIBLE);
-        hintText.setVisibility(View.GONE);
     }
 
     // Gradient background methods
@@ -893,7 +899,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 for (String candidate: candidates) {
                     if (endWord.equals(candidate)) {
                         return count;
-                    } else hintString = candidate;
+                    }
                     queue.offer(candidate);
                 }
             }
