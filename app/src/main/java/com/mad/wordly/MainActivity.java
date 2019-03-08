@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
                     howTW.setTextColor(Color.parseColor("#ffffff"));
                     statsTW.setVisibility(View.GONE);
                     howLabelTW.setVisibility(View.VISIBLE);
-                    howBodyTW.setText("Welcome to 66. \nThis is a game in which you are given a start word and an target word. You are allowed to change one letter each turn. The goal is to keep making one letter change until you reach the target word within the time limit of 66 seconds. \nWARNING: Pressing \"H\" will give you a visual suggestion for the last word before the target. GOOD LUCK, the developers of this game believe in you :)");
+                    howBodyTW.setText("Welcome to 66. \nThis is a game in which you are given a start word and an target word. You are allowed to change one letter each turn. The goal is to keep making changes until you reach the target word within the time limit of 66 seconds. \n\nWARNING: Pressing \"H\" will give you a visual suggestion for the last word before the target. \n\nGOOD LUCK, the developers of this game believe in you :)");
                     howBodyTW.setVisibility(View.VISIBLE);
                     fullScreen();
                 } else {
@@ -629,6 +629,8 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         lastWordTW.setVisibility(View.GONE);
         wordInput.setVisibility(View.GONE);
         howTW.setVisibility(View.VISIBLE);
+        hintText.setVisibility(View.GONE);
+        hintImage.setVisibility(View.GONE);
     }
 
     // Gradient background methods
