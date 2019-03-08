@@ -119,10 +119,11 @@ public class MainActivity extends AppCompatActivity {
 
     protected boolean howPressed;
     protected boolean statsPressed;
+    protected boolean hintDisplayed = false;
     protected Animation anim;
     private GestureDetectorCompat mDetector;
 
-
+    //Getting permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Pull JSON Object from the URL Pixabay gives
     public class URLPullService extends IntentService {
 
         public JSONObject result;
@@ -198,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Get the URL from URLPullService
     public String getURLfromPixabay(String string, int i){
 
         string = "https://pixabay.com/api/?key=11734484-6b3632485027241902e65c165&q=" + string + "&image_type=photo";
@@ -217,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
         return url;
     }
 
+    //Load image  into ImageView
     public void getImage(ImageView image, String string, int i) {
         String inputURL = getURLfromPixabay( string, i );
 
@@ -410,7 +414,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                             timer.cancel();
                             logoTW.setText("66");
                             hidePlay();
-                            WinorLose.setText("You gave up\n Guesses\n" + numGuesses );
+                            WinorLose.setText("YOU GAVE UP\n Guesses\n" + numGuesses );
                             WinorLose.setVisibility(View.VISIBLE);
                             tapToPlayTW.setText("PLAY AGAIN");
                             initialScreen();
@@ -425,6 +429,8 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         }
     }
 
+
+    //Pull stats info from SharePreferences and
     public void showStats() {
 
         int wins = sharedPreferences.getInt("Wins", -1);
@@ -530,7 +536,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         if (word.equals(lastWordTW.getText().toString()) && oneLetterChanged()) {
             endGame(true, numGuesses, (int)finalTime/1000);
             timer.cancel();
-            WinorLose.setText("YOU WIN \n Guesses\n" + numGuesses );
+            WinorLose.setText("YOU WON \n Guesses\n" + numGuesses );
             WinorLose.setVisibility(View.VISIBLE);
             tapToPlayTW.setText("PLAY AGAIN");
             initialScreen();
@@ -549,6 +555,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
     public void pressedHint() {
 
+        hintDisplayed = !hintDisplayed;
         isRotated = !isRotated;
         hintTW.setRotation(isRotated ? 90 : 0);
         final ViewGroup transitionsContainer = (ViewGroup) findViewById( R.id.transitions_container );
@@ -624,13 +631,14 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         setGame();
         wordInput.setText(null);
         logoTW.setText("66");
+        if (hintDisplayed == true){
+            pressedHint();
+        }
         hintTW.setVisibility(View.GONE);
         startWordTW.setVisibility(View.GONE);
         lastWordTW.setVisibility(View.GONE);
         wordInput.setVisibility(View.GONE);
         howTW.setVisibility(View.VISIBLE);
-        hintText.setVisibility(View.GONE);
-        hintImage.setVisibility(View.GONE);
     }
 
     // Gradient background methods
@@ -930,7 +938,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
     private String findHint()
     {
-        String result = "question+mark";
+        String result;
         for (int i = 1; i < words[1].length()-2; i++){
             result = words[1].substring(0, i);
             for (int j = 0; j < 25; j++)
@@ -939,10 +947,13 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 result += words[1].substring(i+1);
                 if (result.equals(words[1]) == false && allWords.contains(result))
                 {
+                    Log.d(TAG, "hint " + result);
                     return result;
                 } else result = words[1].substring(0, i);
             }
         }
+        result = "question+mark";
+        Log.d(TAG, "hint question+mark");
         return result;
     }
 }
