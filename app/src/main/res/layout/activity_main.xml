@@ -199,7 +199,7 @@
         android:layout_marginTop="200dp"
         android:fontFamily="@font/calibre_semibold"
         android:textColor="#fff"
-        android:textSize="32dp"
+        android:textSize="18dp"
         android:visibility="gone"
         android:alpha="0.75"/>
 
@@ -280,7 +280,7 @@
         android:layout_marginLeft="25dp"
         android:layout_marginTop="360dp"
         android:fontFamily="@font/calibre_semibold"
-        android:text="Average time"
+        android:text="Time per game"
         android:textColor="#fff"
         android:textSize="32dp"
         android:visibility="gone"/>
@@ -313,7 +313,7 @@
         android:layout_marginLeft="25dp"
         android:layout_marginTop="460dp"
         android:fontFamily="@font/calibre_semibold"
-        android:text="Average number of guesses"
+        android:text="Guesses per game"
         android:textColor="#fff"
         android:textSize="32dp"
         android:visibility="gone"/>
