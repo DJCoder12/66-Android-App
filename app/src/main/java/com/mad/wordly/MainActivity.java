@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
     protected TextView statsLosesNumTW;
     protected TextView statsTimeNumTW;
     protected TextView statsWordsNumTW;
+    protected TextView WinorLose;
     protected ImageView hintImage;
     protected MediaPlayer mPlayer;
     protected CountDownTimer timer;
@@ -255,6 +256,8 @@ public class MainActivity extends AppCompatActivity {
         statsResetTW = (TextView) findViewById(R.id.reset);
         hintImage = (ImageView) findViewById(R.id.display);
         audioTW = (TextView) findViewById(R.id.audio);
+        WinorLose= (TextView) findViewById(R.id.result);
+
         timer = null;
         numGuesses = 1;
         sharedPreferences = getApplicationContext().getSharedPreferences("stats", MODE_PRIVATE);
@@ -406,6 +409,9 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                             timer.cancel();
                             logoTW.setText("66");
                             hidePlay();
+                            WinorLose.setText("You gave up\n Guesses\n" + numGuesses );
+                            WinorLose.setVisibility(View.VISIBLE);
+                            tapToPlayTW.setText("PLAY AGAIN");
                             initialScreen();
                         }
                         result = true;
@@ -525,6 +531,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
             timer.cancel();
             initialScreen();
             hidePlay();
+
         } else if (allWords.contains(word) && oneLetterChanged()) { // fix this
             startAnimation();
             startWordTW.setText( word );
@@ -572,6 +579,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         statsTW.setVisibility(View.GONE);
         tapToPlayTW.clearAnimation();
         tapToPlayTW.setVisibility(View.GONE);
+        WinorLose.setVisibility(View.GONE);
 
         TransitionManager.beginDelayedTransition(transitionsContainer);
         wordInput.setVisibility(View.VISIBLE);
@@ -592,6 +600,9 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 v.vibrate(500);
                 logoTW.setText("66");
                 hidePlay();
+                WinorLose.setText("You gave up\n Guesses\n" + numGuesses );
+                WinorLose.setVisibility(View.VISIBLE);
+                tapToPlayTW.setText("PLAY AGAIN");
                 setGame();
                 initialScreen();
             }
@@ -683,6 +694,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
     public void fullScreen() {
 
+        WinorLose.setVisibility(View.GONE);
         audioTW.setVisibility(View.GONE);
         logoTW.setTextColor(Color.parseColor("#ffffff"));
         tapToPlayTW.clearAnimation();
