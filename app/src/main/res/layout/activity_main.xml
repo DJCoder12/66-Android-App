@@ -43,11 +43,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_alignParentBottom="true"
         android:fontFamily="@font/calibre_semibold"
         android:text="TAP TO PLAY"
+        android:layout_marginBottom="200dp"
         android:textColor="#fff"
         android:textSize="18dp" />
+
+
+    <TextView
+        android:id="@+id/result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:textAlignment="center"
+        android:fontFamily="@font/calibre_semibold"
+        android:text=""
+        android:visibility="gone"
+        android:textColor="#fff"
+        android:textSize="32dp" />
+
 
     <TextView
         android:id="@+id/loadTW"
