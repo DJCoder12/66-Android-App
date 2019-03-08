@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     protected TextView howBodyTW;
     protected TextView tapToPlayTW;
     protected TextView hintTW;
+    protected TextView hintText;
     protected TextView startWordTW;
     protected TextView lastWordTW;
     protected TextView loadLogoTW;
@@ -114,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected int numGuesses;
     protected long finalTime;
+    protected String hintString;
     protected ArrayList<String> allWords;
 
     protected boolean howPressed;
@@ -282,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
         mPlayer.start();
         playAudio();
 
-        getImage(hintImage, "belts", 5);
+        getImage(hintImage, "question+mark", 0);
 
         anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(2000);
@@ -549,7 +551,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         hintTW.setRotation(isRotated ? 90 : 0);
         final ViewGroup transitionsContainer = (ViewGroup) findViewById( R.id.transitions_container );
         TransitionManager.beginDelayedTransition( transitionsContainer, new Rotate() );
-        TextView hintText = (TextView) findViewById( R.id.hintText );
+        hintText = (TextView) findViewById( R.id.hintText );
 
         if (!isRotated) {
             hintImage.animate()
@@ -572,6 +574,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
     public void pressedPlay() {
 
         final ViewGroup transitionsContainer = (ViewGroup) findViewById(R.id.transitions_container);
+        findHint(words[1]);
         numGuesses = 0;
         hintTW.setVisibility(View.VISIBLE);
         logoTW.setTextColor(Color.parseColor("#ffffff"));
@@ -615,10 +618,12 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         wordInput.setText(null);
         logoTW.setText("66");
         hintTW.setVisibility(View.GONE);
+        hintImage.setVisibility(View.GONE);
         startWordTW.setVisibility(View.GONE);
         lastWordTW.setVisibility(View.GONE);
         wordInput.setVisibility(View.GONE);
         howTW.setVisibility(View.VISIBLE);
+        hintText.setVisibility(View.GONE);
     }
 
     // Gradient background methods
@@ -888,7 +893,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 for (String candidate: candidates) {
                     if (endWord.equals(candidate)) {
                         return count;
-                    }
+                    } else hintString = candidate;
                     queue.offer(candidate);
                 }
             }
@@ -918,14 +923,21 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
     private void findHint(String word)
     {
-        String result = "Confused";
-        boolean check = false;
-        for (int i = 0; i < word.length()-2; i++){
-            for (int j = 0; j < 25; i++)
+        String result = "question+mark";
+        for (int i = 1; i < word.length()-2; i++){
+            result = word.substring(0, i);
+            for (int j = 0; j < 25; j++)
             {
-                
+                result += (char) (97 + j);
+                result += word.substring(i+1);
+                if (allWords.contains(result) && result != word)
+                {
+                    getImage(hintImage, result, 0);
+                    break;
+                } else result = word.substring(0, i);
             }
         }
-
+        getImage(hintImage, result, 0);
+        Log.d(TAG, "hint"+hintString);
     }
 }
