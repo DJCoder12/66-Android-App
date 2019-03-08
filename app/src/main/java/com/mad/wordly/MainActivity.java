@@ -418,7 +418,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         statsWinsNumTW.setText(Integer.toString(wins));
         statsLosesNumTW.setText(Integer.toString(loses));
         statsWordsNumTW.setText(Integer.toString(games));
-        statsLosesNumTW.setText(Integer.toString(guesses));
+        statsTimeNumTW.setText(Integer.toString(guesses));
 
         statsWinsTW.setVisibility(View.VISIBLE);
         statsLosesTW.setVisibility(View.VISIBLE);
