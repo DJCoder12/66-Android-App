@@ -378,6 +378,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         mPlayer.pause();
+
+
+
     }
 
     protected void onResume() {
@@ -529,6 +532,9 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
         if (word.equals(lastWordTW.getText().toString()) && oneLetterChanged()) {
             endGame(true, numGuesses, (int)finalTime/1000);
             timer.cancel();
+            WinorLose.setText("YOU WIN \n Guesses\n" + numGuesses );
+            WinorLose.setVisibility(View.VISIBLE);
+            tapToPlayTW.setText("PLAY AGAIN");
             initialScreen();
             hidePlay();
 
@@ -595,12 +601,19 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 logoTW.setText(Integer.toString((int)(millisUntilFinished / 1000)));
             }
 
+            public long onPause(){
+                timer.cancel();
+                return finalTime;
+            }
+
+
+
             public void onFinish() {
                 endGame(false, numGuesses, (int)finalTime/1000);
                 v.vibrate(500);
                 logoTW.setText("66");
                 hidePlay();
-                WinorLose.setText("You gave up\n Guesses\n" + numGuesses );
+                WinorLose.setText("TIME IS UP\n Guesses\n" + numGuesses );
                 WinorLose.setVisibility(View.VISIBLE);
                 tapToPlayTW.setText("PLAY AGAIN");
                 setGame();
@@ -871,7 +884,7 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
             setGame();
             return 0;
         }
-
+        ArrayList<String> path = new ArrayList<String>();
         // build queue, visited set
         Queue<String> queue = new LinkedList<>();
         queue.offer(beginWord);
@@ -887,12 +900,16 @@ class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
                 ArrayList<String> candidates = transform(words, word);
                 for (String candidate: candidates) {
                     if (endWord.equals(candidate)) {
+                        Log.d( TAG, "This is the path" + path.toString());
+
                         return count;
                     }
                     queue.offer(candidate);
+                    path.add(candidate);
                 }
             }
         }
+
         return 0;
     }
 
